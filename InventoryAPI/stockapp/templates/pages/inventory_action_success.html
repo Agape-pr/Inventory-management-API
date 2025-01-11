@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Inventory Update Success</title>
+</head>
+<body>
+    <h1>{{ item.name }} updated successfully!</h1>
+
+    <p>Action: {% if action == 'restock' %} Restocked {% else %} Sold {% endif %}</p>
+    <p>Quantity affected: {{ quantity }}</p>
+    <p>New Quantity: {{ item.quantity }}</p>
+
+    <a href="{% url 'inventory-change-log' item.pk %}">View Inventory Change Log</a><br>
+    <a href="{% url 'inventory-levels' %}">Back to Inventory Levels</a>
+</body>
+</html>

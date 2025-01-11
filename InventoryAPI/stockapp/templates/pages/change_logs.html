@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Change Logs for {{ product.name }}</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f4f4f4; }
+        tr:nth-child(even) { background-color: #f9f9f9; }
+        h1, h2 { color: #333; }
+    </style>
+</head>
+<body>
+    <h1>Change Logs for Inventory Item: {{ product.name }}</h1>
+    <h2>Details</h2>
+    <p><strong>Description:</strong> {{ product.description }}</p>
+    <p><strong>Category:</strong> {{ product.category }}</p>
+    <p><strong>Price:</strong> ${{ product.price }}</p>
+    <p><strong>Quantity Available:</strong> {{ product.quantity }}</p>
+    <p><strong>Date Added:</strong> {{ product.date_added }}</p>
+    <p><strong>Last Updated:</strong> {{ product.last_updated }}</p>
+
+    <h2>Change Logs</h2>
+    {% if change_logs %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Action</th>
+                    <th>Quantity Changed</th>
+                    <th>Performed By</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for log in change_logs %}
+                    <tr>
+                        <td>{{ log.action|title }}</td>
+                        <td>{{ log.change_quantity }}</td>
+                        <td>{{ log.user_name }}</td>
+                        <td>{{ log.created_at }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No change logs are available for this item.</p>
+    {% endif %}
+</body>
+</html>

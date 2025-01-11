@@ -1,0 +1,30 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Restock Item</title>
+</head>
+<body>
+    <h1>Restock Inventory Item</h1>
+
+    <form method="post" action="{% url 'restock-item' %}">
+        {% csrf_token %}
+        
+        <label for="item">Select Item:</label>
+        <select name="item" id="item">
+            {% for inventory_item in items %}
+            <option value="{{ inventory_item.id }}">{{ inventory_item.name }}</option>
+            {% endfor %}
+        </select>
+        
+        <label for="quantity">Enter Quantity to Add:</label>
+        <input type="number" name="quantity" id="quantity" min="1" required>
+        
+        <button type="submit">Restock</button>
+    </form>
+    
+    <a href="{% url 'inventory-levels' %}">Back to Inventory</a>
+</body>
+</html>

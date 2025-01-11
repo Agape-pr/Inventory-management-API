@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Inventory Change Logs</title>
+</head>
+<body>
+    <h1>Search Inventory Change Logs</h1>
+
+    <!-- Input form for product name -->
+    <form action="{% url 'inventory_change_logs_by_name' %}" method="get">
+        <label for="product_name">Enter Product Name:</label>
+        <input type="text" id="product_name" name="product_name" required>
+        <button type="submit">Search</button>
+    </form>
+
+    {% if error %}
+        <p style="color: red;">{{ error }}</p>
+    {% endif %}
+
+    {% if product %}
+        <h2>Change Logs for {{ product.name }}</h2>
+        <p><strong>Description:</strong> {{ product.description }}</p>
+        <p><strong>Category:</strong> {{ product.category }}</p>
+        <p><strong>Price:</strong> ${{ product.price }}</p>
+        <p><strong>Quantity:</strong> {{ product.quantity }}</p>
+
+        <h2>Change Log Entries</h2>
+        {% if change_logs %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Action</th>
+                        <th>Quantity Changed</th>
+                        <th>Performed By</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in change_logs %}
+                        <tr>
+                            <td>{{ log.action|title }}</td>
+                            <td>{{ log.change_quantity }}</td>
+                            <td>{{ log.user_name }}</td>
+                            <td>{{ log.created_at }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p>No change logs available for this product.</p>
+        {% endif %}
+    {% endif %}
+</body>
+</html>

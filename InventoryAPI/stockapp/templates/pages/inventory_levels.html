@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Inventory Levels</title>
+    <style>
+        /* General Styles */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+        }
+        
+        h2 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        /* Form Styles */
+        form {
+            margin: 20px;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .filters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .filters input,
+        .filters select {
+            padding: 8px;
+            margin-right: 10px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            font-size: 14px;
+        }
+        
+        .filters input[type="number"] {
+            width: 120px;
+        }
+        
+        .filters button {
+            padding: 8px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        
+        .filters button:hover {
+            background-color: #45a049;
+        }
+        
+        /* Table Styles */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        
+        th {
+            background-color: #f2f2f2;
+            text-align: left;
+            padding: 10px;
+        }
+        
+        td {
+            padding: 10px;
+            text-align: left;
+        }
+        
+        td a {
+            color: #0066cc;
+            text-decoration: none;
+        }
+        
+        td a:hover {
+            text-decoration: underline;
+        }
+        
+        /* Pagination Styles */
+        .pagination {
+            margin-top: 30px;
+            text-align: center;
+        }
+        
+        .pagination .step-links a {
+            color: #0066cc;
+            margin: 0 5px;
+            text-decoration: none;
+        }
+        
+        .pagination .step-links a:hover {
+            text-decoration: underline;
+        }
+        
+        .pagination .step-links .current {
+            font-weight: bold;
+            color: #333;
+        }
+        
+    </style>
+</head>
+<body>
+    <h2>Inventory Levels</h2>
+
+    <form method="get">
+        <div class="filters">
+            <!-- Category Filter -->
+            <input type="text" name="category" placeholder="Category" value="{{ filters.category }}">
+
+            <!-- Price Filters -->
+            <input type="number" name="price_min" placeholder="Min Price" value="{{ filters.price_min }}">
+            <input type="number" name="price_max" placeholder="Max Price" value="{{ filters.price_max }}">
+
+            <!-- Low Stock Filter -->
+            <input type="number" name="low_stock" placeholder="Low Stock" value="{{ filters.low_stock }}">
+
+            <!-- Sorting Options -->
+            <select name="order_by">
+                <option value="name" {% if filters.order_by == "name" %}selected{% endif %}>Name</option>
+                <option value="quantity" {% if filters.order_by == "quantity" %}selected{% endif %}>Quantity</option>
+                <option value="price" {% if filters.order_by == "price" %}selected{% endif %}>Price</option>
+                <option value="date_added" {% if filters.order_by == "date_added" %}selected{% endif %}>Date Added</option>
+            </select>
+            
+            <!-- Submit Filter -->
+            <button type="submit">Apply Filters</button>
+        </div>
+    </form>
+
+    <table border="1">
+        <tr>
+            <th>Name</th>
+            <th>Description</th>
+            <th>Quantity</th>
+            <th>Price</th>
+            <th>Category</th>
+            <th>Date Added</th>
+            <th>Actions</th>
+        </tr>
+        {% for item in items %}
+        <tr>
+            <td>{{ item.name }}</td>
+            <td>{{ item.description }}</td>
+            <td>{{ item.quantity }}</td>
+            <td>{{ item.price }}</td>
+            <td>{{ item.category }}</td>
+            <td>{{ item.date_added }}</td>
+            <td>
+                <a href="{% url 'item_update' item.pk %}">Edit</a> |
+                <a href="{% url 'item_delete' item.pk %}">Delete</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <div class="pagination">
+        <span class="step-links">
+            {% if items.has_previous %}
+            <a href="?{% if filters %}{{ filters|dictsort:"category"|urlencode }}&{% endif %}page=1"><< First</a>
+            <a href="?{% if filters %}{{ filters|dictsort:"category"|urlencode }}&{% endif %}page={{ items.previous_page_number }}">Previous</a>
+            {% endif %}
+
+            <span class="current">
+                Page {{ items.number }} of {{ items.paginator.num_pages }}.
+            </span>
+
+            {% if items.has_next %}
+            <a href="?{% if filters %}{{ filters|dictsort:"category"|urlencode }}&{% endif %}page={{ items.next_page_number }}">Next</a>
+            <a href="?{% if filters %}{{ filters|dictsort:"category"|urlencode }}&{% endif %}page={{ items.paginator.num_pages }}">Last >></a>
+            {% endif %}
+        </span>
+    </div>
+</body>
+</html>

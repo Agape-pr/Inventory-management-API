@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Select Action</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 50px;
+            text-align: center;
+        }
+        h1 {
+            color: #333;
+        }
+        .actions {
+            margin-top: 30px;
+        }
+        .action-button {
+            display: inline-block;
+            margin: 10px;
+            padding: 15px 30px;
+            font-size: 16px;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 5px;
+            background-color: #007bff;
+            transition: background-color 0.3s ease;
+        }
+        .action-button:hover {
+            background-color: #0056b3;
+        }
+        .back-link {
+            margin-top: 20px;
+            display: inline-block;
+            color: #007bff;
+            text-decoration: none;
+        }
+        .back-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <h1>What would you like to do?</h1>
+
+    <div class="actions">
+        <a href="{% url 'restock-item' %}" class="action-button">Restock Item</a>
+        <a href="{% url 'sell-item' %}" class="action-button">Sell Item</a>
+        <a href="{% url 'logsredirect' %}" class="action-button">check logs</a>
+    </div>
+
+    <a href="{% url 'inventory-levels' %}" class="back-link">Back to Inventory</a>
+</body>
+</html>

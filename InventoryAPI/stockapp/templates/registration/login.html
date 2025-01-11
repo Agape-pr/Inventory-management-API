@@ -1,0 +1,19 @@
+{% extends "stockapp/base_generic.html" %}
+
+{% block content %}
+    <div class="container">
+        <h2>Login</h2>
+        <form method="POST">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit">Login</button>
+        </form>
+
+        {% if form.errors %}
+            <div class="error">
+                <p>Invalid login credentials. Please try again.</p>
+            </div>
+        {% endif %}
+        <p>Don't have an account? <a href="{% url 'register' %}">Register here</a></p>
+    </div>
+{% endblock %}

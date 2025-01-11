@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Inventory Change Log</title>
+</head>
+<body>
+    <h1>Change Log for {{ item.name }}</h1>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Action</th>
+                <th>Quantity Changed</th>
+                <th>Date</th>
+                <th>User</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for log in change_logs %}
+                <tr>
+                    <td>{{ log.action }}</td>
+                    <td>{{ log.change_quantity }}</td>
+                    <td>{{ log.created_at }}</td>
+                    <td>{{ log.user.username if log.user else 'System' }}</td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="4">No change logs available.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <br>
+    <a href="{% url 'inventory-levels' %}">Back to Inventory Levels</a>
+</body>
+</html>

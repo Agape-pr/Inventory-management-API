@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventory Management System</title>
+    <link rel="stylesheet" href="styles.css"> <!-- Link to CSS file -->
+    <style>
+        /* General Page Styling */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+        }
+        header {
+            background-color: #2c3e50;
+            color: white;
+            padding: 1em 0;
+            text-align: center;
+        }
+        nav {
+            text-align: center;
+            padding: 1em 0;
+            background-color: #34495e;
+        }
+        nav a {
+            color: white;
+            margin: 0 1em;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        nav a:hover {
+            text-decoration: underline;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2em;
+        }
+        .hero {
+            text-align: center;
+            margin-bottom: 2em;
+        }
+        .hero h1 {
+            font-size: 2.5em;
+            margin-bottom: 0.5em;
+        }
+        .hero p {
+            color: #555;
+            font-size: 1.2em;
+        }
+
+        /* Styling for the #actions section */
+        /* Updated #actions styling */
+        /* Updated #actions styling */
+        #actions {
+            display: flex;
+            flex-direction: column; /* Stack section elements vertically */
+            align-items: center;    /* Center elements horizontally */
+            justify-content: center; /* Center elements vertically */
+            min-height: 60vh;       /* Set the section height */
+            text-align: center;      /* Center text within the section */
+            background-color: #f9f9f9; /* Light background */
+            padding: 20px;
+            margin: 2em 0; /* Add margin for separation */
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Heading styling */
+        #actions h2 {
+            font-size: 2rem;
+            margin-bottom: 20px;
+            color: #333;
+        }
+        
+        /* Styling for the list */
+        #actions ul {
+            list-style: none; /* Remove bullets */
+            padding: 0;
+            display: flex; /* Arrange items in a row */
+            gap: 20px; /* Add space between items */
+            justify-content: center; /* Center the list items horizontally */
+        }
+        
+        /* List items and links */
+        #actions li {
+            margin: 0; /* Reset vertical margin */
+        }
+        
+        #actions a {
+            text-decoration: none;
+            font-size: 1.2rem;
+            color: #007bff; /* Primary link color */
+            padding: 10px 30px; /* Padding for better clickability */
+            border: 2px solid #007bff; /* Add a border */
+            border-radius: 5px;
+            transition: all 0.3s ease; /* Smooth transition for hover effects */
+        }
+        
+        #actions a:hover {
+            background-color: #007bff;
+            color: #fff; /* Change link color to white on hover */
+            cursor: pointer;
+        }
+        
+
+        footer {
+            text-align: center;
+            padding: 1em 0;
+            background-color: #2c3e50;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Inventory Management System</h1>
+        <p>Efficiently manage your stock, sales, and resources.</p>
+    </header>
+    <nav>
+        <a href="#features">Features</a>
+        <a href="#actions">Actions</a>
+        <a href="#contact">Contact</a>
+    </nav>
+    <main class="container">
+        <section class="hero">
+            <h1>Welcome to Your Inventory Management Dashboard</h1>
+            <p>Streamline your inventory processes, track your stock levels, and improve overall efficiency.</p>
+        </section>
+
+        <!-- User Actions Section -->
+        <section id="actions">
+            <h2>User Actions</h2>
+            <ul>
+                <li><a href="login">Log In</a></li>
+                <li><a href="register">Register</a></li>
+            </ul>
+        </section>
+    </main>
+    <footer>
+        <p>&copy; 2025 Inventory Management System. All Rights Reserved.</p>
+    </footer>
+</body>
+</html>
