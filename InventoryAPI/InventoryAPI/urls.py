@@ -19,6 +19,8 @@ from django.urls import path,include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('stockapp.urls')),
+     path('api/', include('users.urls')),  # Link the user routes to the main URL pattern
+    path('api/', include('stockapp.urls')),  # Link to inventory-related views
+
 ]
 include

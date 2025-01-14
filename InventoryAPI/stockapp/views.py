@@ -1,342 +1,168 @@
-from django.shortcuts import render,redirect
-
-from django.contrib.auth import login,logout
-from django.contrib.auth.decorators import login_required
-from django.urls import reverse_lazy
-from django.views.generic import (
-    ListView,
-    CreateView,
-    UpdateView,
-    DeleteView,
-)
-from .models import InventoryItem
-from .forms import InventoryItemForm, CustomUserCreationForm
-
-
-
-from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from django.views.generic import ListView
-from .models import CustomUser
-from django.views.generic.edit import UpdateView, DeleteView
-
-
-
-
-def home(request):
-    return render(request, 'pages/home.html')
-
-@login_required
-def dashboard(request):
-    return render(request, 'stockapp/dashboard.html')
-
-
-def registration(request):
-    if request.method == 'POST':
-        form = CustomUserCreationForm(request.POST)
-        if form.is_valid():
-            user = form.save()
-            login(request, user)
-            return redirect('dashboard')
-            
-    else:
-        form = CustomUserCreationForm()
-        
-    return render(request, 'registration/register.html', {"form": form})
-
-def logout_success(request):
-    logout(request)
-    return redirect('home')
-
-
-
-class InventoryItemListView(LoginRequiredMixin,ListView):
-    model = InventoryItem
-    template_name = 'pages/item_list.html'
-    context_object_name = 'items'
-    
-    def get_queryset(self):
-        # Ensure to fetch only inventory items that belong to the logged-in user
-        return InventoryItem.objects.filter(owner=self.request.user)
-    
-# Create view for inventory items
-class InventoryItemCreateView(LoginRequiredMixin,CreateView):
-    model = InventoryItem
-    form_class = InventoryItemForm
-    template_name = 'pages/item_form.html'
-    success_url = reverse_lazy('inventory-levels')
-    def form_valid(self, form):
-        # Set the owner of the inventory item to the logged-in user
-        form.instance.owner = self.request.user
-        return super().form_valid(form)
-    
-    
-# Update view for inventory items
-
-class InventoryItemUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
-    model = InventoryItem
-    form_class = InventoryItemForm
-    template_name = 'pages/item_form.html'
-    success_url = reverse_lazy('inventory-levels')
-
-    def test_func(self):
-        inventory = self.get_object()
-        return inventory.owner == self.request.user  # Allow update only for own items
-
-
-
-    
-class InventoryItemDeleteView(LoginRequiredMixin, UserPassesTestMixin,DeleteView):
-    model = InventoryItem
-    template_name = 'pages/item_confirm_delete.html'
-    success_url = reverse_lazy('inventory-levels')
-    def test_func(self):
-        # Only allow the owner of the inventory to delete it
-        inventory = self.get_object()
-        return inventory.owner == self.request.user
-    
-    
-    
-    
-#check for stock level:
-from django.views.generic import ListView
-from django.db.models import Q
-from .models import InventoryItem
-
-
-
-
-from django.views.generic import ListView
-from django.core.paginator import Paginator
-from .models import InventoryItem
-
-
-#handling filters
-class InventoryLevelsView(ListView):
-   
-    model = InventoryItem
-    template_name = "pages/inventory_levels.html"  # Template to render
-    context_object_name = "items"  # Context name in the template
-    paginate_by = 10  # Number of items per page
-
-    def get_queryset(self):
-       
-        # Start with user's own inventory items
-        queryset = InventoryItem.objects.filter(owner=self.request.user)
-
-        # Filters from GET request
-        category = self.request.GET.get('category')
-        price_min = self.request.GET.get('price_min')
-        price_max = self.request.GET.get('price_max')
-        low_stock = self.request.GET.get('low_stock')
-        order_by = self.request.GET.get('order_by', 'name')  # Default to sorting by Name
-
-        # Apply filters if provided
-        if category:
-            queryset = queryset.filter(category__icontains=category)
-        if price_min:
-            queryset = queryset.filter(price__gte=float(price_min))
-        if price_max:
-            queryset = queryset.filter(price__lte=float(price_max))
-        if low_stock:
-            try:
-                threshold = int(low_stock)
-                queryset = queryset.filter(quantity__lt=threshold)
-            except ValueError:
-                pass  # Ignore invalid low_stock values
-
-        # Apply sorting if the "order_by" parameter is provided
-        if order_by == 'name':
-            queryset = queryset.order_by('name')
-        elif order_by == 'quantity':
-            queryset = queryset.order_by('quantity')
-        elif order_by == 'price':
-            queryset = queryset.order_by('price')
-        elif order_by == 'date_added':
-            queryset = queryset.order_by('date_added')
-
-        return queryset
-
-    def get_context_data(self, **kwargs):
-        """
-        Pass extra context to the template, including pagination data and filter options.
-        """
-        context = super().get_context_data(**kwargs)
-        context['filters'] = {
-            'category': self.request.GET.get('category', ''),
-            'price_min': self.request.GET.get('price_min', ''),
-            'price_max': self.request.GET.get('price_max', ''),
-            'low_stock': self.request.GET.get('low_stock', ''),
-            'order_by': self.request.GET.get('order_by', 'name'),
-        }
-        return context
-
-
-
-
-
-from django.shortcuts import get_object_or_404, render
-
-from django.views import View
-from .models import InventoryItem, InventoryChangeLog
-
-
-
-
-
-#changelogs tracking
-from django.shortcuts import render, get_object_or_404
-from django.views import View
-from .models import InventoryChangeLog, InventoryItem
-
-class InventoryChangeLogView(View):
-    def get(self, request, item_id):
-       
-        # Get the specific inventory item and ensure it's owned by the user
-        item = get_object_or_404(InventoryItem, pk=item_id, owner=request.user)
-
-        # Get all the change logs related to that item
-        change_logs = InventoryChangeLog.objects.filter(inventory_item=item).order_by('-created_at')
-
-        return render(
-            request, 
-            'pages/inventory_change_log.html',
-            {'item': item, 'change_logs': change_logs}
-        )
-
-
-
-
-#handling restocking
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib import messages
-from .models import InventoryItem, InventoryChangeLog
-
-class RestockItemView(View):
-    def get(self, request):
-        items = InventoryItem.objects.filter(owner=request.user)  # Ensure user can only see their own items
-        return render(request, 'pages/restock_item.html', {'items': items})
-
-    def post(self, request):
-        item_id = request.POST.get('item')
-        quantity = request.POST.get('quantity')
-
-        try:
-            item = InventoryItem.objects.get(id=item_id, owner=request.user)  # Ensures ownership
-            item.quantity += int(quantity)
-            item.save()
-
-            # Log the restock change
-            InventoryChangeLog.objects.create(
-                inventory_item=item,
-                action="restock",
-                change_quantity=+int(quantity),
-                user=request.user
-            )
-            messages.success(request, f"{item.name} restocked successfully.")
-        except (InventoryItem.DoesNotExist, ValueError):
-            messages.error(request, "Failed to restock item. Ensure valid input.")
-
-        return redirect('inventory-levels')
-
-#handling selling
-class SellItemView(View):
-    def get(self, request):
-        items = InventoryItem.objects.filter(owner=request.user)
-        return render(request, 'pages/sell_item.html', {'items': items})
-
-    def post(self, request):
-        item_id = request.POST.get('item')
-        quantity = request.POST.get('quantity')
-
-        try:
-            item = InventoryItem.objects.get(id=item_id, owner=request.user)
-            quantity_to_sell = int(quantity)
-            
-            if quantity_to_sell > item.quantity:
-                messages.error(request, f"Not enough stock for {item.name}.")
-            else:
-                item.quantity -= quantity_to_sell
-                item.save()
-
-                # Log the sale action
-                InventoryChangeLog.objects.create(
-                    inventory_item=item,
-                    action="sale",
-                    change_quantity=-quantity_to_sell,
-                    user=request.user
-                )
-                messages.success(request, f"{quantity} of {item.name} sold successfully.")
-        except (InventoryItem.DoesNotExist, ValueError):
-            messages.error(request, "Failed to sell item. Ensure valid input.")
-
-        return redirect('inventory-levels')
-
-
-from django.views.generic.base import TemplateView
-
-
-#handling template to connect manage item sections
-
-class InventoryActionView(TemplateView):
-    
-    
-    template_name = "pages/select_action.html"
-    
-    
-
-
-#view for changelog history 
-
-
-
-from django.shortcuts import render, get_object_or_404
+from rest_framework import generics, status
+from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
+from django.shortcuts import get_object_or_404
 from .models import InventoryItem, InventoryChangeLog
-from .serializers import InventoryChangeLogSerializer
+from .serializers import (
+    InventoryItemSerializer,
+    RestockSellSerializer,
+    InventoryChangeLogSerializer,
+)
 
-class InventoryChangeLogByNameTemplateView(APIView):
-    permission_classes = [IsAuthenticated]
+
+
+
+
+# This view is responsible for two things:
+# 1. Displaying all inventory items that belong to the currently logged-in user.
+# 2. Allowing the user to add a new inventory item.
+class InventoryItemListCreateAPIView(generics.ListCreateAPIView):
+    serializer_class = InventoryItemSerializer
+    permission_classes = [IsAuthenticated]  # Only logged-in users can access this.
+
+    def get_queryset(self):
+        # We only want to show items that belong to the person currently logged in.
+        return InventoryItem.objects.filter(owner=self.request.user)
+
+    def perform_create(self, serializer):
+        # When creating a new item, we make sure it gets assigned to the current user.
+        serializer.save(owner=self.request.user)
+
+
+# This view handles all the details about a single inventory item.
+# Users can:
+# - Fetch details of an item.
+# - Update an item's details (e.g., name or quantity).
+# - Delete an item when it’s no longer needed.
+class InventoryItemRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
+    serializer_class = InventoryItemSerializer
+    permission_classes = [IsAuthenticated]  # Only logged-in users can access this.
+
+    def get_queryset(self):
+        # Like before, we ensure only the logged-in user's items are shown.
+        return InventoryItem.objects.filter(owner=self.request.user)
+
+
+
+#views for handling filters
+
+class InventoryLevelView(generics.ListAPIView):
+    """
+    Endpoint for viewing the current inventory levels with optional filters.
+    """
+    serializer_class = InventoryItemSerializer
+    permission_classes = [IsAuthenticated]  # Only accessible to logged-in users
+    
+    def get_queryset(self):
+        """
+        Optionally filter inventory items based on category, price range, or low stock.
+        """
+        queryset = InventoryItem.objects.all()
+        
+        # Filtering by category if the `category` query parameter is provided
+        category = self.request.query_params.get('category', None)
+        if category:
+            queryset = queryset.filter(category__icontains=category)
+        
+        # Filtering by price range if the `price_min` and/or `price_max` are provided
+        price_min = self.request.query_params.get('price_min', None)
+        price_max = self.request.query_params.get('price_max', None)
+        if price_min:
+            queryset = queryset.filter(price__gte=price_min)
+        if price_max:
+            queryset = queryset.filter(price__lte=price_max)
+        
+        # Filtering for low stock items (e.g., items with quantity less than threshold)
+        low_stock = self.request.query_params.get('low_stock', None)
+        if low_stock is not None:
+            low_stock_threshold = 10  # You can adjust this value based on business needs
+            queryset = queryset.filter(quantity__lt=low_stock_threshold)
+
+        return queryset
+    
+    
+    
+    # This view handles two actions: restocking (adding quantity) and selling (subtracting quantity).
+# The specific action depends on what’s sent in the URL: "restock" or "sell".
+class RestockSellItemAPIView(APIView):
+    permission_classes = [IsAuthenticated]  # Ensure the user is logged in before doing anything.
+
+    def post(self, request, action_type):
+        """
+        Handle restocking or selling items based on 'action_type'.
+        """
+        # Validate the data sent by the user.
+        serializer = RestockSellSerializer(data=request.data)
+        if serializer.is_valid():
+            # Fetch the item the user wants to restock or sell using the name, ensuring it belongs to them.
+            item = get_object_or_404(
+                InventoryItem, name=serializer.validated_data['name'], owner=request.user
+            )
+            quantity = serializer.validated_data['quantity']
+
+            # Decide whether we're restocking or selling.
+            if action_type == "restock":
+                item.quantity += quantity
+                action = "restock"
+            elif action_type == "sell":
+                # Check if there's enough stock to sell the requested quantity.
+                if quantity > item.quantity:
+                    return Response(
+                        {"error": "Not enough stock available."}, status=status.HTTP_400_BAD_REQUEST
+                    )
+                item.quantity -= quantity
+                action = "sale"
+            else:
+                # If the action type is invalid, inform the user.
+                return Response(
+                    {"error": "Invalid action type."}, status=status.HTTP_400_BAD_REQUEST
+                )
+
+            # Save the updated quantity and log what happened.
+            item.save()
+            InventoryChangeLog.objects.create(
+                inventory_item=item,
+                action=action,
+                change_quantity=quantity if action == "restock" else -quantity,
+                user=request.user
+            )
+
+            # Let the user know everything worked.
+            return Response(
+                {"success": f"Item '{item.name}' {action}ed successfully."}, status=status.HTTP_200_OK
+            )
+
+        # If something goes wrong, return an error with details.
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+# This view retrieves the history of changes (logs) for a specific inventory item.
+class InventoryChangeLogAPIView(APIView):
+    permission_classes = [IsAuthenticated]  # Only accessible to logged-in users.
 
     def get(self, request):
         """
-        Fetch and render change logs for an inventory item by name.
+        Fetch the change log for an inventory item by its name.
         """
-        product_name = request.GET.get("product_name", "").strip()
+        # Get the product name from the request.
+        product_name = request.query_params.get("product_name", "").strip()
 
-        # Check if product_name is provided
+        # Check if the user provided a valid product name.
         if not product_name:
-            return render(
-                request,
-                "pages/change_logs.html",
-                {"error": "Please provide a valid product name.", "change_logs": None},
-            )
+            return Response({"error": "Please provide a product name."}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Fetch the product by name
-        
+        # Try to find the inventory item by name, ensuring it belongs to the current user.
         product = get_object_or_404(InventoryItem, name__iexact=product_name, owner=request.user)
 
-        # Fetch related change logs
+        # Fetch all the logs associated with this item, sorted by the latest change.
         change_logs = InventoryChangeLog.objects.filter(inventory_item=product).order_by("-created_at")
-        
 
-        # Serialize logs for template context
-        serialized_data = InventoryChangeLogSerializer(change_logs, many=True).data
+        # Convert the logs into a format that can be sent back in the response.
+        serializer = InventoryChangeLogSerializer(change_logs, many=True)
 
-        # Render template
-        return render(
-            request,
-            "pages/change_logs.html",
-            {
-                "product": product,
-                "change_logs": serialized_data,
-            },
+        # Send the logs back to the user.
+        return Response(
+            {"product": product.name, "change_logs": serializer.data}, status=status.HTTP_200_OK
         )
-
-
-
-#handling templates to check the change logs
-class ChangelogsCheckView(TemplateView):
-    
-    
-    template_name = "pages/product_searchlog.html"

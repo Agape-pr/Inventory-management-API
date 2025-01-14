@@ -1,48 +1,25 @@
 from django.urls import path
-from.views import registration,home,dashboard, logout_success
-from django.contrib.auth.views import LoginView, LogoutView
 from .views import (
-    InventoryItemListView,
-    InventoryItemCreateView,
-    InventoryItemUpdateView,
-    InventoryItemDeleteView,
-    InventoryLevelsView,
-    InventoryActionView,
-    RestockItemView,
-    SellItemView,
-    InventoryChangeLogByNameTemplateView,
-    ChangelogsCheckView
+    InventoryItemListCreateAPIView,
+    InventoryItemRetrieveUpdateDestroyAPIView,
+    RestockSellItemAPIView,
+    InventoryChangeLogAPIView,
 )
-from .views import InventoryChangeLogView
-# , UserDeleteView,UserUpdateView, UserListView
-
+from .views import InventoryLevelView
 urlpatterns = [
-    # path("users/<int:pk>/edit/", UserUpdateView.as_view(), name="user_edit"),
-    # path("users/<int:pk>/delete/", UserDeleteView.as_view(), name="user_delete"),
-    # path("users/", UserListView.as_view(), name="user_list"),
-    
-    path('register/',registration, name='register'),
-    path('',home, name='home'),
-    path('login/',LoginView.as_view(template_name = 'registration/login.html'), name= 'login'),
-    path('logout/',logout_success, name='logout'),
-    path('dashboard/',dashboard, name='dashboard'),
-    path('create/', InventoryItemCreateView.as_view(), name='item_create'),
-    path('items/', InventoryItemListView.as_view(), name='item_list'),
-    path('<int:pk>/update/', InventoryItemUpdateView.as_view(), name='item_update'),
-    path('<int:pk>/delete/', InventoryItemDeleteView.as_view(), name='item_delete'),
-    
-    path('inventory-levels/', InventoryLevelsView.as_view(), name='inventory-levels'),
-   
-    path("inventory/change-logs-by-name/", InventoryChangeLogByNameTemplateView.as_view(), name="inventory_change_logs_by_name"),
+    # Endpoint for listing and creating inventory items.
+    path('inventory/', InventoryItemListCreateAPIView.as_view(), name='inventory-list-create'),
 
+    # Endpoint for retrieving, updating, and deleting a specific inventory item by ID.
+    path('inventory/<int:pk>/', InventoryItemRetrieveUpdateDestroyAPIView.as_view(), name='inventory-detail'),
 
-    
-    path('inventory/restock/', RestockItemView.as_view(), name='restock-item'),
-    path('inventory/sell/', SellItemView.as_view(), name='sell-item'),
-    
-    
-    path('inventory/action/', InventoryActionView.as_view(), name='inventory-action'),
-    path('check_logs/',ChangelogsCheckView.as_view(), name='logsredirect')
-    
+    # Endpoint for restocking an inventory item.
+    path('inventory/restock/', RestockSellItemAPIView.as_view(), {'action_type': 'restock'}, name='inventory-restock'),
+
+    # Endpoint for selling an inventory item.
+    path('inventory/sell/', RestockSellItemAPIView.as_view(), {'action_type': 'sell'}, name='inventory-sell'),
+
+    # Endpoint for fetching change logs for an item by its name.
+    path('inventory/logs/', InventoryChangeLogAPIView.as_view(), name='inventory-logs'),
+    path('inventory/levels/', InventoryLevelView.as_view(), name='inventory-levels')
 ]
-

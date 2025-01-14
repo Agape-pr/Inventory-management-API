@@ -1,38 +1,30 @@
 from rest_framework import serializers
-from .models import InventoryItem
+from .models import InventoryItem, InventoryChangeLog
+from rest_framework import serializers  
+
+
+class InventoryItemSerializer(serializers.ModelSerializer):
+    class Meta:
+        # Define the model and fields to interact with the inventory items.
+        model = InventoryItem
+        fields = '__all__'  # Inc
+        
+        
 
 class InventoryItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = InventoryItem
-        fields = ['id', 'name', 'description', 'quantity', 'price', 'category', 'date_added', 'last_updated']
-        read_only_fields = ['date_added', 'last_updated']
-        
-    def validate(self, data):
-        if data['quantity'] <= 0:
-            raise serializers.ValidationError("Quantity must be greater than zero")
-        if data['price'] <= 0:
-            raise serializers.ValidationError("Price must be greater than zero")
-        return data      
-    
-    
-    
-    
-from rest_framework import serializers
-from .models import InventoryChangeLog
+        fields = ['id', 'name', 'description', 'quantity', 'price', 'category', 'date_added', 'owner']
+        read_only_fields = ['id', 'date_added', 'owner']
+
+
+
+class RestockSellSerializer(serializers.Serializer):
+    name = serializers.CharField()  # For item name lookup
+    quantity = serializers.IntegerField()
+
 
 class InventoryChangeLogSerializer(serializers.ModelSerializer):
-    user_name = serializers.CharField(source='user.email', read_only=True)
-    item_name = serializers.CharField(source='inventory_item.name', read_only=True)
-
     class Meta:
         model = InventoryChangeLog
-        fields = [
-            "id",
-            "item_name",   
-            "action",      
-            "change_quantity",
-            "user_name",   
-        ]
- 
-    
-    
+        fields = ['id', 'action', 'change_quantity', 'created_at']
